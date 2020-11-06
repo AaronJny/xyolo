@@ -10,13 +10,15 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="xyolo",  # Replace with your own username
-    version="0.1.3",
+    version="0.1.5",
     author="AaronJny",
     author_email="aaronjny7@gmail.com",
-    description="A tf.keras implementation of YOLOv3 with TensorFlow 2.",
+    description="xyolo is a highly encapsulated YOLO v3 library implemented in Python."
+                "With xyolo, you can easily complete the training and calling of the yolo3 "
+                "target detection task with just a few lines of Python code.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/AaronJny/tf2-keras-yolo3",
+    url="https://github.com/AaronJny/xyolo",
     packages=setuptools.find_packages(),
     package_data={
         'xyolo': ['xyolo_data/*.txt',

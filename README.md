@@ -4,10 +4,18 @@
 
 借助xyolo，您可以只使用几行Python代码轻松完成yolo3目标检测任务的训练和调用。
 
+xyolo is a highly encapsulated YOLO v3 library implemented in Python.
+
+With xyolo, you can easily complete the training and calling of the yolo3 target detection task with just a few lines of Python code.
+
 
 请注意：
 
 > 我使用的Python是Anaconda的Python 3.7发行版本，在shell里面进行了初始化(python和pip默认指向当前激活环境，而不是默认的python2)，所以文章中的python和pip请根据自己的情况判断是否需要替换为python3和pip3。
+
+PS:
+
+> 此项目是对[tf2-keras-yolo3](https://github.com/AaronJny/tf2-keras-yolo3)项目的重构和封装。
 
 
 ## 一、安装
@@ -262,7 +270,7 @@ img.show()
 
 #### 2.从备用链接手动下载
 
-如果没有代理的话，也可以选在从备用下载地址下载。
+如果没有代理的话，也可以选择从备用下载地址下载。
 
 我把预训练权重上传到百度云上了，链接如下：
 
@@ -441,7 +449,7 @@ class MyConfig(DefaultYolo3Config):
 
 我决定在`xyolo`工具里面给用户足够的定制空间，所以参数会设置的比较多，这样使用起来会更加灵活。
 
-但也不用担心配置繁琐，因为如上面所见，其实常用的配置项就几个，只要掌握那几个就可以轻松上手了。但是如果向更灵活的话，就需要了解更多参数。下面给出一份完整的参数配置信息（也就是xyolo的默认配置）：
+但也不用担心配置繁琐，因为如上面所见，其实常用的配置项就几个，只要掌握那几个就可以轻松上手了。但是如果想更灵活的话，就需要了解更多参数。下面给出一份完整的参数配置信息（也就是xyolo的默认配置）：
 
 ```python
 from os.path import abspath, join, dirname, exists
@@ -613,10 +621,10 @@ class DefaultYolo3Config:
 
 `model_path`决定了xyolo在进行检测时，会加载那个模型文件。它的选择逻辑如下：
 
-按照 _model_path > output_model_path > pre_training_weights_keras_path 的优先级选择，即：
+按照 `_model_path` > `output_model_path` > `pre_training_weights_keras_path` 的优先级选择，即：
 
 - 如果设置了`_model_path`,选择`_model_path`(`3、使用自己的数据训练模型`中检测部分就是这种情况)
-- 否则，如果设置了`output_model_path`且路径存在，选择`output_model_path`（也就是说，因为设置了`_output_model_path`，所以即使`3、使用自己的数据训练模型`中没配置`model_path`，它也能够正确加载模型）
+- 否则，如果设置了`output_model_path`且路径存在，选择`output_model_path`（也就是说，因为设置了`_output_model_path`，所以假设`3、使用自己的数据训练模型`中没配置`model_path`，它在检测时也能够正确加载模型）
 - 否则，选择`pre_training_weights_keras_path` (也就是转换后的官方预训练模型，即`1、使用官方预训练权重，进行目标检测测试` 中的情况)
 
 
