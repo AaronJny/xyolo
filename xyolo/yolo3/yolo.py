@@ -402,9 +402,13 @@ class YOLO(object):
         prev_time = timer()
         while True:
             return_value, frame = vid.read()
+            b, g, r = cv2.split(frame)
+            frame = cv2.merge([r, g, b])
             image = Image.fromarray(frame)
             image = self.detect_and_draw_image(image)
             result = np.asarray(image)
+            r, g, b = cv2.split(result)
+            result = cv2.merge([b, g, r])
             curr_time = timer()
             exec_time = curr_time - prev_time
             prev_time = curr_time
