@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2020/10/30 23:54
-# @Author  : AaronJny
-# @File    : setup.py
-# @Desc    :
+# @Date         : 2020-10-30 23:54:59
+# @Author       : AaronJny
+# @LastEditTime : 2021-01-03 20:40:19
+# @FilePath     : /xyolo/setup.py
+# @Desc         :
 import setuptools
 
 with open("README.md", "r") as fh:
@@ -10,7 +11,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="xyolo",  # Replace with your own username
-    version="0.1.5",
+    version="0.1.6",
     author="AaronJny",
     author_email="aaronjny7@gmail.com",
     description="xyolo is a highly encapsulated YOLO v3 library implemented in Python."
