@@ -62,7 +62,8 @@ class YOLO(object):
     def load_yolo_model(self):
         self.model_path = self.config.model_path
         model_path = os.path.expanduser(self.model_path)
-        assert model_path.endswith('.h5'), 'Keras model or weights must be a .h5 file.'
+        assert model_path.endswith(
+            '.h5'), 'Keras model or weights must be a .h5 file.'
 
         # Load model, or construct model and load weights.
         num_anchors = len(self.anchors)
@@ -73,10 +74,11 @@ class YOLO(object):
         except:
             self.yolo_model = tiny_yolo_body(Input(shape=(None, None, 3)), num_anchors // 2, num_classes) \
                 if is_tiny_version else yolo_body(Input(shape=(None, None, 3)), num_anchors // 3, num_classes)
-            self.yolo_model.load_weights(self.model_path)  # make sure model, anchors and classes match
+            # make sure model, anchors and classes match
+            self.yolo_model.load_weights(self.model_path)
         else:
             assert self.yolo_model.layers[-1].output_shape[-1] == \
-                   num_anchors / len(self.yolo_model.output) * (num_classes + 5), \
+                num_anchors / len(self.yolo_model.output) * (num_classes + 5), \
                 'Mismatch between model and given anchor and class sizes'
 
         print('{} model, anchors, and classes loaded.'.format(model_path))
@@ -89,7 +91,8 @@ class YOLO(object):
             map(lambda x: (int(x[0] * 255), int(x[1] * 255), int(x[2] * 255)),
                 self.colors))
         np.random.seed(10101)  # Fixed seed for consistent colors across runs.
-        np.random.shuffle(self.colors)  # Shuffle colors to decorrelate adjacent classes.
+        # Shuffle colors to decorrelate adjacent classes.
+        np.random.shuffle(self.colors)
         np.random.seed(None)  # Reset seed to default.
 
     @tf.function
@@ -98,7 +101,8 @@ class YOLO(object):
         # self.input_image_shape = K.placeholder(shape=(2,))
         self.input_image_shape = tf.constant(image_shape)
         if self.gpu_num >= 2:
-            self.yolo_model = multi_gpu_model(self.yolo_model, gpus=self.gpu_num)
+            self.yolo_model = multi_gpu_model(
+                self.yolo_model, gpus=self.gpu_num)
 
         boxes, scores, classes = yolo_eval(self.yolo_model(image_data), self.anchors,
                                            len(self.class_names), self.input_image_shape,
@@ -116,47 +120,67 @@ class YOLO(object):
             for b in range(batch_size):
                 if i == 0:
                     np.random.shuffle(annotation_lines)
-                image, box = get_random_data(annotation_lines[i], input_shape, random=True)
+                image, box = get_random_data(
+                    annotation_lines[i], input_shape, random=True)
                 image_data.append(image)
                 box_data.append(box)
                 i = (i + 1) % n
             image_data = np.array(image_data)
             box_data = np.array(box_data)
-            y_true = preprocess_true_boxes(box_data, input_shape, anchors, num_classes)
+            y_true = preprocess_true_boxes(
+                box_data, input_shape, anchors, num_classes)
             yield [image_data, *y_true], np.zeros(batch_size)
 
     @classmethod
     def data_generator_wrapper(cls, annotation_lines, batch_size, input_shape, anchors, num_classes):
         n = len(annotation_lines)
-        if n == 0 or batch_size <= 0: return None
+        if n == 0 or batch_size <= 0:
+            return None
         return cls.data_generator(annotation_lines, batch_size, input_shape, anchors, num_classes)
 
     def fit(self, **kwargs):
         # 如下参数可以通过传参覆盖config里的配置，更灵活一些
         # 不配置默认使用config里的参数
         dataset_path = kwargs.get('dataset_path', self.config.dataset_path)
-        tensorboard_log_path = kwargs.get('tensorboard_log_path', self.config.tensorboard_log_path)
-        output_model_path = kwargs.get('output_model_path', self.config.output_model_path)
+        tensorboard_log_path = kwargs.get(
+            'tensorboard_log_path', self.config.tensorboard_log_path)
+        output_model_path = kwargs.get(
+            'output_model_path', self.config.output_model_path)
         frozen_train = kwargs.get('frozen_train', self.config.frozen_train)
-        frozen_train_epochs = kwargs.get('frozen_train_epochs', self.config.frozen_train_epochs)
-        frozen_batch_size = kwargs.get('frozen_batch_size', self.config.frozen_batch_size)
+        frozen_train_epochs = kwargs.get(
+            'frozen_train_epochs', self.config.frozen_train_epochs)
+        frozen_batch_size = kwargs.get(
+            'frozen_batch_size', self.config.frozen_batch_size)
         frozen_lr = kwargs.get('frozen_lr', self.config.frozen_lr)
-        unfreeze_train = kwargs.get('unfreeze_train', self.config.unfreeze_train)
-        unfreeze_train_epochs = kwargs.get('unfreeze_train_epochs', self.config.unfreeze_train_epochs)
-        unfreeze_batch_size = kwargs.get('unfreeze_batch_size', self.config.unfreeze_batch_size)
+        unfreeze_train = kwargs.get(
+            'unfreeze_train', self.config.unfreeze_train)
+        unfreeze_train_epochs = kwargs.get(
+            'unfreeze_train_epochs', self.config.unfreeze_train_epochs)
+        unfreeze_batch_size = kwargs.get(
+            'unfreeze_batch_size', self.config.unfreeze_batch_size)
         unfreeze_lr = kwargs.get('unfreeze_lr', self.config.unfreeze_lr)
-        initial_weight_path = kwargs.get('initial_weight_path', self.config.pre_training_weights_keras_path)
-        use_tensorboard = kwargs.get('use_tensorboard', self.config.use_tensorboard)
-        use_checkpoint = kwargs.get('use_checkpoint', self.config.use_checkpoint)
+        initial_weight_path = kwargs.get(
+            'initial_weight_path', self.config.pre_training_weights_keras_path)
+        use_tensorboard = kwargs.get(
+            'use_tensorboard', self.config.use_tensorboard)
+        use_checkpoint = kwargs.get(
+            'use_checkpoint', self.config.use_checkpoint)
         val_split = kwargs.get('val_split', self.config.val_split)
         use_reduce_lr = kwargs.get('use_reduce_lr', self.config.use_reduce_lr)
-        reduce_lr_monitor = kwargs.get('reduce_lr_monitor', self.config.reduce_lr_monitor)
-        reduce_lr_factor = kwargs.get('reduce_lr_factor', self.config.reduce_lr_factor)
-        reduce_lr_patience = kwargs.get('reduce_lr_patience', self.config.reduce_lr_patience)
-        use_early_stopping = kwargs.get('use_early_stopping', self.config.use_early_stopping)
-        early_stopping_monitor = kwargs.get('early_stopping_monitor', self.config.early_stopping_monitor)
-        early_stopping_min_delta = kwargs.get('early_stopping_min_delta', self.config.early_stopping_min_delta)
-        early_stopping_patience = kwargs.get('early_stopping_patience', self.config.early_stopping_patience)
+        reduce_lr_monitor = kwargs.get(
+            'reduce_lr_monitor', self.config.reduce_lr_monitor)
+        reduce_lr_factor = kwargs.get(
+            'reduce_lr_factor', self.config.reduce_lr_factor)
+        reduce_lr_patience = kwargs.get(
+            'reduce_lr_patience', self.config.reduce_lr_patience)
+        use_early_stopping = kwargs.get(
+            'use_early_stopping', self.config.use_early_stopping)
+        early_stopping_monitor = kwargs.get(
+            'early_stopping_monitor', self.config.early_stopping_monitor)
+        early_stopping_min_delta = kwargs.get(
+            'early_stopping_min_delta', self.config.early_stopping_min_delta)
+        early_stopping_patience = kwargs.get(
+            'early_stopping_patience', self.config.early_stopping_patience)
 
         is_tiny_version = len(self.anchors) == 6  # default setting
         num_classes = len(self.class_names)
@@ -176,7 +200,8 @@ class YOLO(object):
             callbacks.append(logging)
         if use_checkpoint:
             checkpoint = ModelCheckpoint(
-                tensorboard_log_path + 'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5',
+                tensorboard_log_path +
+                'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5',
                 monitor='val_loss', save_weights_only=True, save_best_only=True)
             callbacks.append(checkpoint)
 
@@ -189,7 +214,8 @@ class YOLO(object):
         num_val = int(len(lines) * val_split)
         num_train = len(lines) - num_val
 
-        logger.info('The first step training begins({} epochs).'.format(frozen_train_epochs))
+        logger.info('The first step training begins({} epochs).'.format(
+            frozen_train_epochs))
         # Train with frozen layers first, to get a stable loss.
         # Adjust num epochs to your dataset. This step is enough to obtain a not bad model.
         if frozen_train:
@@ -212,7 +238,8 @@ class YOLO(object):
                 initial_epoch=0,
                 callbacks=callbacks)
 
-        logger.info('The second step training begins({} epochs).'.format(unfreeze_train_epochs))
+        logger.info('The second step training begins({} epochs).'.format(
+            unfreeze_train_epochs))
         # Unfreeze and continue training, to fine-tune.
         # Train longer if the result is not good.
         if use_reduce_lr:
@@ -230,7 +257,8 @@ class YOLO(object):
                           loss={'yolo_loss': lambda y_true, y_pred: y_pred})  # recompile to apply the change
             logger.info('Unfreeze all of the layers.')
 
-            batch_size = unfreeze_batch_size  # note that more GPU memory is required after unfreezing the body
+            # note that more GPU memory is required after unfreezing the body
+            batch_size = unfreeze_batch_size
             logger.info('Train on {} samples, val on {} samples, with batch size {}.'.format(num_train, num_val,
                                                                                              batch_size))
             model.fit(
@@ -242,7 +270,7 @@ class YOLO(object):
                                                             num_classes),
                 validation_steps=max(1, num_val // batch_size),
                 epochs=frozen_train_epochs + unfreeze_train_epochs,
-                initial_epoch=unfreeze_train_epochs,
+                initial_epoch=frozen_train_epochs,
                 callbacks=callbacks)
         model.save_weights(output_model_path)
         logger.info('Training completed!')
@@ -268,7 +296,8 @@ class YOLO(object):
         if self.model_image_size != (None, None):
             assert self.model_image_size[0] % 32 == 0, 'Multiples of 32 required'
             assert self.model_image_size[1] % 32 == 0, 'Multiples of 32 required'
-            boxed_image = letterbox_image(image, tuple(reversed(self.model_image_size)))
+            boxed_image = letterbox_image(
+                image, tuple(reversed(self.model_image_size)))
         else:
             new_image_size = (image.width - (image.width % 32),
                               image.height - (image.height % 32))
@@ -278,7 +307,8 @@ class YOLO(object):
         image_data /= 255.
         image_data = np.expand_dims(image_data, 0)  # Add batch dimension.
 
-        out_boxes, out_scores, out_classes = self.compute_output(image_data, [image.size[1], image.size[0]])
+        out_boxes, out_scores, out_classes = self.compute_output(
+            image_data, [image.size[1], image.size[0]])
 
         logger.debug('Found {} boxes for {}'.format(len(out_boxes), 'img'))
 
@@ -295,8 +325,10 @@ class YOLO(object):
             left = max(0, np.floor(left + 0.5).astype('int32'))
             bottom = min(image.size[1], np.floor(bottom + 0.5).astype('int32'))
             right = min(image.size[0], np.floor(right + 0.5).astype('int32'))
-            results.append((predicted_class, int(c), float(score), left, top, right, bottom))
-            logger.debug('Class {},Position {}, {}'.format(label, (left, top), (right, bottom)))
+            results.append((predicted_class, int(c), float(
+                score), left, top, right, bottom))
+            logger.debug('Class {},Position {}, {}'.format(
+                label, (left, top), (right, bottom)))
 
         end = timer()
         logger.debug('Cost time {}s'.format(end - start))
@@ -360,8 +392,10 @@ class YOLO(object):
                       int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT)))
         isOutput = True if output_path != "" else False
         if isOutput:
-            print("!!! TYPE:", type(output_path), type(video_FourCC), type(video_fps), type(video_size))
-            out = cv2.VideoWriter(output_path, video_FourCC, video_fps, video_size)
+            print("!!! TYPE:", type(output_path), type(
+                video_FourCC), type(video_fps), type(video_size))
+            out = cv2.VideoWriter(
+                output_path, video_FourCC, video_fps, video_size)
         accum_time = 0
         curr_fps = 0
         fps = "FPS: ??"
